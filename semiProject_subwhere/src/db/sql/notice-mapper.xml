@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+
+<entry key="selectAllNoticeCount">
+SELECT COUNT(*) COUNT
+  FROM NOTICE
+ WHERE STATUS = 'Y' 
+
+</entry>
+
+
+<entry key="selectNotice">
+  SELECT *
+   FROM(
+     SELECT ROWNUM AS RNUM, A.*
+       FROM (
+          SELECT 
+                NOTICE_NO
+              , NICKNAME
+              , NOTICE_TITLE
+              , NOTICE_CONTENT
+              , N.COUNT
+              , TO_CHAR(CREATE_DATE,'YYYY/MM/DD') AS CREATE_DATE
+              , N.STATUS
+           FROM NOTICE N
+           JOIN MEMBER ON (MEMBER_NO = NOTICE_WRITER)
+          WHERE N.STATUS = 'Y'
+         )A
+  )
+ WHERE RNUM BETWEEN ? AND ? 
+   AND STATUS = 'Y'
+ ORDER BY NOTICE_NO DESC
+
+</entry>
+
+
+<entry key="selectQna">
+
+ SELECT *
+   FROM (
+   SELECT ROWNUM AS RNUM , A.*
+		  FROM (
+		  SELECT 
+			        QA_NO
+			      , QUESTION
+			      , ANSWER
+			      , TO_CHAR(QA_DATE,'YYYY/MM/DD') AS QA_DATE
+			      , STATUS
+			      , COUNT
+			   FROM QA
+			  WHERE STATUS ='Y'
+		  ) A
+   )
+ WHERE RNUM BETWEEN ? AND ?  
+   AND STATUS = 'Y'
+ ORDER BY QA_NO DESC
+</entry>
+
+
+<entry key="increaseNoticeCount">
+UPDATE NOTICE
+   SET COUNT = COUNT +1 
+ WHERE NOTICE_NO = ?
+   AND STATUS = 'Y'
+
+</entry>
+
+
+<entry key="selectDetailNotice">
+SELECT 
+       NOTICE_NO
+     , NOTICE_TITLE
+     , NOTICE_CONTENT
+  FROM NOTICE
+ WHERE NOTICE_NO = ?
+
+</entry>
+
+
+<entry key="increaseQna">
+ UPDATE QA
+   SET COUNT = COUNT +1 
+ WHERE QA_NO = ?
+   AND STATUS = 'Y'  
+
+</entry>
+
+<entry key="selectDetailQna">
+
+SELECT 
+       QA_NO
+     , QUESTION
+     , ANSWER
+  FROM QA
+ WHERE QA_NO = ?
+
+</entry>
+
+
+<entry key="updateQnA">
+UPDATE QA
+   SET QUESTION = ?
+     , ANSWER = ?
+ WHERE QA_NO = ?  
+   AND STATUS = 'Y'
+
+</entry>
+
+
+<entry key="insertNotice">
+
+INSERT INTO 
+       NOTICE
+       (
+         NOTICE_NO
+       , NOTICE_WRITER
+       , NOTICE_TITLE
+       , NOTICE_CONTENT
+       , COUNT
+       , CREATE_DATE
+       , STATUS       
+       )
+       VALUES
+       (
+         SEQ_NOTICE.NEXTVAL
+       , 1  
+       , ?
+       , ?
+       , DEFAULT
+       , SYSDATE
+       , 'Y'
+       )
+
+</entry>
+
+
+<entry key="insertQnA">
+
+INSERT INTO 
+      QA
+       (
+         QA_NO
+       , QUESTION
+       , ANSWER
+       , QA_DATE
+       , STATUS
+       , COUNT
+       )
+       VALUES
+       (
+         SEQ_QA_NO.NEXTVAL
+       , ?  
+       , ?
+       , SYSDATE
+       , 'Y'
+       ,  0
+       )
+
+</entry>
+
+
+<entry key="updateNotice">
+UPDATE NOTICE
+   SET NOTICE_TITLE = ?
+     , NOTICE_CONTENT = ?
+ WHERE NOTICE_NO = ?  
+   AND STATUS = 'Y'
+
+</entry>
+
+
+<entry key="deleteNotice">
+UPDATE NOTICE
+   SET STATUS = 'N'
+ WHERE NOTICE_NO = ?  
+   AND STATUS = 'Y'
+
+</entry>
+
+<entry key="deleteQnA"> 
+UPDATE QA
+   SET STATUS = 'N'
+ WHERE QA_NO = ?  
+   AND STATUS = 'Y'
+</entry>
+
+
+
+</properties>
