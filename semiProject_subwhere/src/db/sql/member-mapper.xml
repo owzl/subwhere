@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+
+<entry key="selectMember">
+	SELECT 
+	       MEMBER_NO
+	     , MEMBER_NAME
+	     , MEMBER_ID
+	     , MEMBER_PWD
+	     , PHONE
+	     , EMAIL
+	     , NICKNAME
+	     , STATUS
+	     , ENROLL_DATE
+	     , PROFILE_IMG
+	  FROM MEMBER
+	 WHERE MEMBER_ID = ?
+	   AND STATUS = 'Y'
+</entry>
+
+
+<entry key="loginMember">
+	SELECT 
+	       MEMBER_NO
+	     , MEMBER_NAME
+	     , MEMBER_ID
+	     , MEMBER_PWD
+	     , PHONE
+	     , EMAIL
+	     , NICKNAME
+	     , STATUS
+	     , ENROLL_DATE
+	     , PROFILE_IMG
+	  FROM MEMBER
+	 WHERE MEMBER_ID = ?
+	   AND MEMBER_PWD = ?
+	   AND STATUS = 'Y'
+</entry>
+
+<entry key="findMemberId">
+	SELECT 
+			MEMBER_NO
+	     , MEMBER_NAME
+	     , MEMBER_ID
+	     , MEMBER_PWD
+	     , PHONE
+	     , EMAIL
+	     , NICKNAME
+	     , STATUS
+	     , ENROLL_DATE
+	     , PROFILE_IMG
+	  FROM MEMBER
+	 WHERE MEMBER_NAME = ?
+	   AND EMAIL = ?
+</entry>
+
+<entry key="findMemberPwd">
+	SELECT 
+		   MEMBER_NO
+	     , MEMBER_NAME
+	     , MEMBER_ID
+	     , MEMBER_PWD
+	     , PHONE
+	     , EMAIL
+	     , NICKNAME
+	     , STATUS
+	     , ENROLL_DATE
+	     , PROFILE_IMG
+	  FROM MEMBER
+	 WHERE MEMBER_ID = ?
+	   AND EMAIL = ?
+	   AND PHONE = ?
+</entry>
+
+<entry key="updateMemberPwd">
+	UPDATE MEMBER
+	   SET MEMBER_PWD = ?
+	WHERE MEMBER_ID = ?
+</entry>
+
+
+
+<!-- 수쟌 -->
+<entry key="idCheck"> <!-- ajax 아이디 중복 체크 -->
+SELECT
+       COUNT(*) "COUNT"
+  FROM MEMBER
+ WHERE MEMBER_ID = ?
+</entry>
+
+<entry key="insertMember"> <!-- 회원가입 -->
+   INSERT
+   INTO MEMBER
+       (
+           MEMBER_NO
+         , MEMBER_NAME
+         , MEMBER_ID
+         , MEMBER_PWD
+         , PHONE
+         , EMAIL
+         , NICKNAME
+         , PROFILE_IMG
+       )
+   VALUES
+       (
+           SEQ_MEMBER_NO.NEXTVAL
+         , ?
+         , ?
+         , ?
+         , ?
+         , ?
+         , ?
+         , ?
+       )
+</entry>
+<!-- 지영 -->
+
+<entry key="updateMember"> <!-- 마이페이지 개인정보 -->
+   UPDATE MEMBER
+      SET
+      PROFILE_IMG = ?
+     , NICKNAME = ?
+     , EMAIL = ?
+     , PHONE = ?
+     WHERE MEMBER_ID = ?
+</entry>
+
+<entry key="deleteMember"><!-- 회원 탈퇴 -->
+   UPDATE MEMBER
+      SET 
+      STATUS ='S'
+      WHERE 
+      MEMBER_ID = ?
+      AND MEMBER_PWD = ?
+</entry>
+
+<entry key="selectrreviewListCount"> <!--여행 후기 게시판 댓글 개수 -->
+SELECT COUNT(*) COUNT
+FROM COMMENTS C
+JOIN REVIEW R USING(BOARD_NO)
+WHERE MEMBER_NO=?
+AND C.STATUS = 'Y'
+AND R.STATUS = 'Y'
+</entry>
+
+<entry key="selectRlist"><!-- 후기글 댓글 리스트 + 페이징 포함 -->
+   SELECT * 
+     FROM(SELECT ROWNUM RNUM,R.*
+       FROM(SELECT 
+             BOARD_NO
+             , TITLE
+             , COMMENT_CONTENT "COMMENT"
+             , C.MODIFY_DATE
+           FROM COMMENTS C
+           JOIN REVIEW R USING(BOARD_NO)
+           WHERE C.STATUS = 'Y'
+           AND R.STATUS = 'Y'
+           AND MEMBER_NO = ?
+           AND BOARD_NO BETWEEN 2000 AND 2600
+           ORDER
+               BY MODIFY_DATE DESC
+               ) R
+           )
+       WHERE RNUM BETWEEN ? AND ?
+</entry>
+
+<entry key="selectCosListCount"> <!-- 코스게시판 댓글 개수 -->
+SELECT COUNT(*) COUNT 
+FROM COMMENTS C
+JOIN COURSE R USING(BOARD_NO)
+WHERE C.MEMBER_NO = ?
+AND C.STATUS = 'Y'
+AND R.STATUS = 'Y'
+</entry>
+
+<entry key="selectmyCreview"><!-- 코스댓글 + 페이징 -->
+SELECT * 
+  FROM(SELECT ROWNUM RNUM,C.*
+    FROM(SELECT 
+          BOARD_NO
+          , TITLE
+          , COMMENT_CONTENT "COMMENT"
+          , C.MODIFY_DATE
+        FROM COMMENTS C
+        JOIN COURSE R USING(BOARD_NO)
+        WHERE R.STATUS = 'Y'
+        AND C.STATUS = 'Y'
+        AND C.MEMBER_NO = ?
+        AND BOARD_NO BETWEEN 1000 AND 1600
+        ORDER
+            BY MODIFY_DATE DESC
+            ) C
+        )
+    WHERE RNUM BETWEEN ? AND ?
+</entry>
+
+<entry key="selectDListCount"><!-- 여행지 댓글 개수 -->
+SELECT COUNT(*) COUNT
+FROM COMMENTS C
+JOIN DESTINATION D USING(BOARD_NO)
+WHERE MEMBER_NO=?
+AND C.STATUS = 'Y'
+AND D.STATUS = 'Y'
+</entry>
+
+<entry key="selectmyRreview"><!-- 여행지 댓글 + 페이징 -->
+SELECT * 
+  FROM(SELECT ROWNUM RNUM,K.*
+    FROM(SELECT 
+          BOARD_NO
+          , TITLE
+          , COMMENT_CONTENT "COMMENT"
+          , C.MODIFY_DATE
+        FROM COMMENTS C
+        JOIN DESTINATION D USING(BOARD_NO)
+        WHERE C.STATUS = 'Y'
+        AND D.STATUS = 'Y'
+        AND C.MEMBER_NO = ?
+        AND BOARD_NO BETWEEN 100 AND 700
+        ORDER
+            BY MODIFY_DATE DESC
+            ) K
+        )
+    WHERE RNUM BETWEEN ? AND ?
+</entry>
+
+
+<entry key="selectCboardCount"> <!-- 내가 쓴 코스글 개수 -->
+SELECT COUNT (*) COUNT
+FROM COURSE
+WHERE MEMBER_NO = ?
+AND STATUS = 'Y'
+</entry>
+
+<entry key="selectbcosList"> <!-- 마이페이지 내가 쓴 코스글 조회 + 페이징 -->
+SELECT *
+       FROM(SELECT ROWNUM RNUM,A.*
+            FROM(SELECT
+                      BOARD_NO   
+                         ,FILE_PATH || '/' || CHANGE_NAME "TITLE_IMG"
+                         ,TITLE 
+                         ,CONTENT
+                         , COUNT
+                         ,CREATE_DATE
+                    FROM COURSE C
+                    JOIN UPLOADFILE ON (REFD_BNO = BOARD_NO)
+                    WHERE MEMBER_NO = ?
+                    AND C.STATUS='Y'
+                    AND FILE_LEVEL = 1
+                   ORDER 
+                       BY CREATE_DATE DESC
+                   ) A
+           )
+   WHERE RNUM BETWEEN ? AND ?
+</entry>
+
+<entry key="selectReBoardCount"> <!-- 마이페이지 내가 쓴 후기글 개수 -->
+SELECT COUNT (*) COUNT
+    FROM REVIEW
+    WHERE BOARD_WRITER = ?
+    AND STATUS = 'Y'
+</entry>
+
+
+<entry key="selectReview"> <!-- 마이페이지 내가 쓴 후기글 조회 -->
+SELECT *
+       FROM(SELECT ROWNUM RNUM,A.*
+            FROM(SELECT
+                   BOARD_NO
+                   , FILE_PATH  || '/' || CHANGE_NAME "TITLE_IMG"
+                   , TITLE
+                   , CONTENT
+                   , COUNT
+                   , CREATE_DATE
+                FROM REVIEW R
+                JOIN UPLOADFILE ON (REFD_BNO = BOARD_NO)
+                WHERE BOARD_WRITER = ?
+                AND R.STATUS = 'Y'
+                AND FILE_LEVEL = 1
+                   ORDER 
+                       BY CREATE_DATE DESC
+                   ) A
+           )
+   WHERE RNUM BETWEEN ? AND ?
+</entry>
+
+<entry key="mylikelist"> <!-- 여행지 좋아요 보관함 -->
+SELECT
+    BOARD_NO
+  ,  TITLE
+  , FILE_PATH || '/' || CHANGE_NAME "TITLE_IMG"
+FROM LIKED L
+JOIN UPLOADFILE ON (BOARD_NO = REFD_BNO)
+JOIN COURSE C USING(BOARD_NO)
+WHERE L.MEMBER_NO = ?
+AND C.STATUS = 'Y' 
+AND FILE_LEVEL=1
+
+UNION ALL
+
+SELECT
+    BOARD_NO
+  ,  TITLE
+  , FILE_PATH || '/' || CHANGE_NAME "TITLE_IMG"
+FROM LIKED L
+JOIN UPLOADFILE ON (BOARD_NO = REFD_BNO)
+JOIN REVIEW R USING(BOARD_NO)
+WHERE L.MEMBER_NO =?
+AND R.STATUS = 'Y' 
+AND FILE_LEVEL=1
+
+UNION ALL
+
+SELECT
+    BOARD_NO
+  ,  TITLE
+  , FILE_PATH || '/' || CHANGE_NAME "TITLE_IMG"
+FROM LIKED L
+JOIN UPLOADFILE ON (BOARD_NO = REFD_BNO)
+JOIN DESTINATION D USING(BOARD_NO)
+WHERE L.MEMBER_NO = ?
+AND D.STATUS = 'Y' 
+AND FILE_LEVEL=1
+</entry>
+
+
+</properties>

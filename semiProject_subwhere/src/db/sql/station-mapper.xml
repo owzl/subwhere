@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+
+<entry key="selectStation">
+	SELECT 
+	       STATION_NO
+	     , STATION_NAME
+	     , LINE
+	  FROM STATION
+	 WHERE LINE = ?
+</entry>
+
+<entry key="searchStation">
+	SELECT *
+	FROM(
+	SELECT ROWNUM RNUM, A.*
+	FROM(
+	 SELECT
+	     BOARD_NO
+	    ,STATION_NO
+	    ,TITLE
+	    ,CONTENT
+	    ,COUNT
+	    ,MODIFY_DATE
+	    ,DTN_NAME
+	    ,D.STATUS
+	    ,FILE_PATH||'/'||CHANGE_NAME "TITLE_IMAGE"
+	    ,FILE_LEVEL
+	FROM DESTINATION D
+	JOIN UPLOADFILE F ON (BOARD_NO = REFD_BNO)
+	JOIN STATION USING(STATION_NO)
+	WHERE D.STATUS = 'Y'
+	AND F.STATUS ='Y'
+	AND FILE_LEVEL = 1
+    AND STATION_NO = ?
+	ORDER BY MODIFY_DATE DESC
+	)A
+	)
+	WHERE RNUM BETWEEN ? AND ?
+	
+</entry>
+
+<entry key="headerSearchListCount">
+	SELECT
+	    COUNT(*) count
+	    FROM DESTINATION
+	WHERE STATUS = 'Y'
+	  AND STATION_NO = ?
+</entry>
+
+<entry key="whatisStationName">
+	SELECT 
+	      STATION_NO
+	    , STATION_NAME
+	    , LINE
+	FROM STATION
+	WHERE STATION_NO = ?
+</entry>
+	
+
+</properties>

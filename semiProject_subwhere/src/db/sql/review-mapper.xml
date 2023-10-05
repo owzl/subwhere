@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+
+<entry key="selectStation">
+SELECT 
+       STATION_NO
+     , STATION_NAME
+     , LINE
+  FROM STATION
+ WHERE LINE = ?
+</entry>
+
+
+
+<entry key="insertReview">
+INSERT
+  INTO REVIEW
+  (
+    BOARD_NO
+  , STATION_NO
+  , BOARD_WRITER
+  , TITLE
+  , ADDRESS
+  , CONTENT
+  , TIP
+  )
+  VALUES
+  (
+    SEQ_REVIEW_NO.NEXTVAL
+  , ?
+  , ?
+  , ?
+  , ?
+  , ?
+  , ?
+  )
+</entry>
+
+<entry key="insertUploadfile">
+INSERT
+  INTO UPLOADFILE
+  (
+    FILE_NO
+  , REFD_BNO
+  , ORIGIN_NAME
+  , CHANGE_NAME
+  , FILE_PATH
+  , FILE_LEVEL
+  , UPLOAD_DATE <!-- nullable : no -->
+  )
+  VALUES
+  (
+    SEQ_FILE_NO.NEXTVAL
+  , SEQ_REVIEW_NO.CURRVAL
+  , ?
+  , ?
+  , ?
+  , ?
+  , SYSDATE <!-- db를 보면 UPLOAD_DATE 컬럼의 default값이 따로 안정해져있음 그래서 안쓰면 계속 null났던것임 -->
+  )
+</entry>
+
+
+
+<!-- 여행후기 리스트 조회 + 한페이지당 1번~8번 게시물까지 -->
+<entry key="selectReviewList">
+SELECT *
+  FROM (
+        SELECT ROWNUM RNUM, A.*
+          FROM (
+                SELECT
+                        BOARD_NO
+                      , STATION_NO
+                      , BOARD_WRITER
+                      , TITLE
+                      , ADDRESS
+                      , CONTENT
+                      , TIP
+                      , COUNT
+                      , FILE_PATH || '/' || CHANGE_NAME "TITLEIMG"
+                  FROM REVIEW R
+                  JOIN UPLOADFILE U ON (BOARD_NO = REFD_BNO)
+                 WHERE R.STATUS = 'Y'
+                   AND FILE_LEVEL = 1 <!-- 이거 빠져서 '대표이미지'만 나와야되는데 자꾸 넣은 상세이미지 모두 리스트에 나왔던것! -->
+                 ORDER
+                    BY BOARD_NO DESC
+                ) A
+        )
+ WHERE RNUM BETWEEN ? AND ?
+</entry>
+
+<entry key="selectListCount">
+SELECT
+       COUNT(*) count
+  FROM REVIEW
+ WHERE STATUS = 'Y'
+</entry>
+
+<entry key="increaseCount"> <!-- 조회수 증가 -->
+UPDATE
+        REVIEW
+   SET COUNT = COUNT + 1
+ WHERE BOARD_NO = ?
+   AND STATUS = 'Y'
+</entry>
+
+<entry key="selectReview"> <!-- 여행후기 상세페이지 -->
+SELECT
+        BOARD_NO
+      , STATION_NO
+     , MEMBER_ID
+      , TITLE
+      , ADDRESS
+      , CONTENT
+      , TIP
+      , COUNT
+      , TO_CHAR(CREATE_DATE, 'YYYY/MM/DD') "CREATE_DATE"
+      , TO_CHAR(MODIFY_DATE, 'YYYY/MM/DD') "MODIFY_DATE"
+       , STATION_NAME
+      , LINE
+  FROM REVIEW
+  JOIN STATION USING (STATION_NO)
+  JOIN MEMBER ON (BOARD_WRITER = MEMBER_NO)
+ WHERE BOARD_NO = ?
+</entry>
+
+<entry key="selectUploadfileList">
+SELECT
+        FILE_NO
+      , REFD_BNO
+      , ORIGIN_NAME
+      , CHANGE_NAME
+      , FILE_PATH
+      , FILE_LEVEL
+      , STATUS
+  FROM UPLOADFILE
+ WHERE REFD_BNO = ?
+   AND STATUS = 'Y'
+</entry>
+
+<entry key="deleteReview">
+   UPDATE REVIEW
+      SET STATUS = 'N'
+    WHERE BOARD_NO = ?
+</entry>
+
+<!-- 댓글 등록 -->
+<entry key="insertReply">
+INSERT
+     INTO COMMENTS
+     (
+       COMMENT_NO
+     , MEMBER_NO
+     , BOARD_NO
+     , COMMENT_CONTENT
+     , ENROLL_DATE
+     , MODIFY_DATE
+     , STATUS
+     )
+     VALUES
+     (
+       SEQ_COMMENT_NO.NEXTVAL
+     , ?
+     , ?
+     , ?
+     , SYSDATE
+     , SYSDATE
+     , 'Y'
+     )
+</entry>
+
+<!-- 댓글 조회 -->
+<entry key="selectReplyList">
+SELECT
+           COMMENT_NO
+         , COMMENT_CONTENT
+         , MEMBER_NO
+         , TO_CHAR(C.MODIFY_DATE, 'YYYY/MM/DD') "MODIFY_DATE"
+         , MEMBER_NAME
+     FROM COMMENTS C
+     JOIN MEMBER M USING (MEMBER_NO)
+    WHERE C.STATUS = 'Y'
+      AND BOARD_NO = ?
+    ORDER
+       BY COMMENT_NO DESC
+</entry>
+
+<!-- 댓글 삭제 -->
+<entry key="deleteReply">
+UPDATE
+        COMMENTS
+   SET STATUS = 'N'
+ WHERE COMMENT_NO = ?
+   AND MEMBER_NO = ?
+   AND BOARD_NO = ?
+</entry>
+
+
+
+
+<!-- 전체, 1호선, 2호선, .. 조회 + 한페이지당 1~N개씩 보일건지 -->
+<entry key="selectReviewLineList">
+SELECT
+        BOARD_NO
+      , STATION_NO
+      , BOARD_WRITER
+      , TITLE
+      , ADDRESS
+      , COUNT
+      , FILE_PATH || '/' || CHANGE_NAME "TITLEIMG"
+      , LINE
+  FROM REVIEW R
+  JOIN UPLOADFILE U ON (BOARD_NO = REFD_BNO)
+  JOIN STATION USING (STATION_NO)
+ WHERE LINE = ?
+   AND R.STATUS = 'Y'
+   AND FILE_LEVEL = 1
+ ORDER
+    BY BOARD_NO DESC
+</entry>
+
+
+
+<!-- + 페이징 처리까지 하려면.. 물음표가 3개 되는데.. 가넝? (보류) -->
+<entry key="aaaa">
+SELECT *
+  FROM (
+        SELECT ROWNUM RNUM, A.*
+          FROM (
+                SELECT
+                        BOARD_NO
+                      , STATION_NO
+                      , BOARD_WRITER
+                      , TITLE
+                      , ADDRESS
+                      , COUNT
+                      , FILE_PATH || '/' || CHANGE_NAME "TITLEIMG"
+                      , LINE
+                  FROM REVIEW R
+                  JOIN UPLOADFILE U ON (BOARD_NO = REFD_BNO)
+                  JOIN STATION USING (STATION_NO)
+                 WHERE LINE = ?
+                   AND R.STATUS = 'Y'
+                   AND FILE_LEVEL = 1
+                 ORDER
+                    BY BOARD_NO DESC
+                ) A
+        )
+ WHERE RNUM BETWEEN ? AND ?
+</entry>
+
+
+
+<!-- 좋아요 -->
+<entry key= "checkLike">
+SELECT
+       MEMBER_NO
+     , BOARD_NO
+ FROM LIKED
+WHERE MEMBER_NO = ?
+  AND BOARD_NO = ?
+</entry>
+
+<entry key = "insertLike">
+INSERT
+   INTO LIKED
+   (
+    MEMBER_NO
+   ,BOARD_NO 
+   )
+   VALUES
+   (
+    ?
+   ,?
+   )
+</entry>
+
+<entry key = "deleteLike">
+DELETE
+FROM LIKED
+WHERE MEMBER_NO = ?
+AND BOARD_NO = ?
+</entry>
+
+
+<!-- 신고 -->
+<entry key = "insertReport">
+INSERT
+   INTO REPORT
+   (
+    SMEM_NO
+   ,BOARD_NO 
+   )
+   VALUES
+   (
+    ?
+   ,?
+   )
+</entry>
+
+<entry key= "checkReport">
+SELECT
+       SMEM_NO
+     , BOARD_NO
+FROM REPORT
+WHERE SMEM_NO = ?
+AND BOARD_NO = ?
+</entry>
+
+<entry key = "deleteReport">
+DELETE
+FROM REPORT
+WHERE SMEM_NO = ?
+AND BOARD_NO = ?
+</entry>
+
+<!-- 여행 후기 게시글 수정(글, 사진) -->
+<entry key="updateReview"> <!-- 글 -->
+UPDATE
+       REVIEW
+  SET STATION_NO = ?
+     , TITLE = ?
+    , ADDRESS = ?
+    , CONTENT = ?
+    , TIP = ?
+WHERE BOARD_NO = ?
+</entry>
+
+<entry key="updateUploadfile"> 
+UPDATE
+        UPLOADFILE
+    SET ORIGIN_NAME = ?
+      , CHANGE_NAME = ?
+      , FILE_PATH = ?
+      , UPLOAD_DATE = SYSDATE
+WHERE FILE_NO = ?
+  AND FILE_LEVEL = ?
+</entry>
+
+<entry key="updateStation">
+UPDATE
+        STATION
+   SET LINE = ?
+ WHERE STATION_NO = ?
+</entry>
+
+
+
+
+</properties>
